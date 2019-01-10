@@ -1,0 +1,14 @@
+{
+  "name": "lib-json2mysql",
+  "version": "1.0.0",
+  "description": "Allows to write a JSON-Object as fields into a mysql-table",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dominik Sigmund",
+  "license": "ISC",
+  "dependencies": {
+    "mysql": "^2.16.0"
+  }
+}
