@@ -1,0 +1,25 @@
+{
+  "table": "simple",
+  "fields": [
+    {
+      "field": "id",
+      "type": "INT"
+    },
+    {
+      "field": "timestamp",
+      "type": "DATETIME"
+    },
+    {
+      "field": "title",
+      "type": "VARCHAR(255)"
+    }
+  ],
+  "indices": ["timestamp"],
+  "primary": ["id"],
+  "partioning": {
+    "on": "timestamp",
+    "count": 10
+  },
+  "engine": "MyISAM",
+  "ignoreInsertError": true
+}

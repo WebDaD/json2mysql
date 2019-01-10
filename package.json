@@ -4,11 +4,24 @@
   "description": "Allows to write a JSON-Object as fields into a mysql-table",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/test.js",
+    "test-coverage": "nyc --reporter=html --reporter=text mocha -- test/test.js",
+    "test-graphics": "nyc --reporter=html --reporter=text mocha -R mochawesome -- test/test.js",
+    "test-mutation": "stryker run",
+    "test-all": "npm run test && npm run test-coverage && npm run test-graphics && npm run test-mutation"
   },
   "author": "Dominik Sigmund",
   "license": "ISC",
-  "dependencies": {
-    "mysql": "^2.16.0"
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "mochawesome": "^3.1.1",
+    "mysql": "^2.16.0",
+    "nyc": "^13.1.0",
+    "stryker": "^0.34.0",
+    "stryker-api": "^0.23.0",
+    "stryker-html-reporter": "^0.17.0",
+    "stryker-javascript-mutator": "^0.13.0",
+    "stryker-mocha-framework": "^0.14.0",
+    "stryker-mocha-runner": "^0.16.0"
   }
 }
