@@ -11,20 +11,80 @@
 const JSON2MySQL = require('../index.js')
 const mysql = require('mysql')
 const assert = require('assert')
+let j2m = undefined
 let config = require('./config.json')
-let j2m
 let mockDB = {
   query: function (sql) {
     // TODO: fake a query
   }
 }
 describe('Object Creation', function () {
-  it('should throw an error if table is missing in options')
-  it('should throw an error if fields is missing in options')
-  it('should throw an error if mysql is missing in options')
-  it('should create an object with default values')
-  it('should create an object with overriden value for engine')
-  it('should create an object with overriden value for ignoreInsertError')
+  it('should throw an error if "table" is missing in options', function () {
+    let newconfig = JSON.parse(JSON.stringify(config))
+    delete newconfig.table
+    try {
+      j2m = new JSON2MySQL(newconfig)
+      assert.fail('Should throw an error')
+    } catch (e) {
+      assert.equal(e.toString().indexOf('Table') > -1, true)
+    }
+  })
+  it('should throw an error if "fields" is missing in options', function () {
+    let newconfig = JSON.parse(JSON.stringify(config))
+    delete newconfig.fields
+    try {
+      j2m = new JSON2MySQL(newconfig)
+      assert.fail('Should throw an error')
+    } catch (e) {
+      assert.equal(e.toString().indexOf('Fields') > -1, true)
+    }
+  })
+  it('should throw an error if "mysql" is missing in options', function () {
+    let newconfig = JSON.parse(JSON.stringify(config))
+    try {
+      j2m = new JSON2MySQL(newconfig)
+      assert.fail('Should throw an error')
+    } catch (e) {
+      assert.equal(e.toString().indexOf('Mysql') > -1, true)
+    }
+  })
+  it('should create an object with default values', function () {
+    let newconfig = JSON.parse(JSON.stringify(config))
+    delete newconfig.engine
+    delete newconfig.ignoreInsertError
+    newconfig.mysql = mockDB
+    try {
+      j2m = new JSON2MySQL(newconfig)
+      assert.equal(j2m.options.engine, 'InnoDB')
+      assert.equal(j2m.options.ignoreInsertError, false)
+    } catch (e) {
+      assert.fail(e)
+    }
+  })
+  it('should create an object with overriden value for engine', function () {
+    let newconfig = JSON.parse(JSON.stringify(config))
+    delete newconfig.ignoreInsertError
+    newconfig.mysql = mockDB
+    try {
+      j2m = new JSON2MySQL(newconfig)
+      assert.equal(j2m.options.engine, newconfig.engine)
+      assert.equal(j2m.options.ignoreInsertError, false)
+    } catch (e) {
+      assert.fail(e)
+    }
+  })
+  it('should create an object with overriden value for ignoreInsertError', function () {
+    let newconfig = JSON.parse(JSON.stringify(config))
+    delete newconfig.engine
+    newconfig.mysql = mockDB
+    try {
+      j2m = new JSON2MySQL(newconfig)
+      assert.equal(j2m.options.engine, 'InnoDB')
+      assert.equal(j2m.options.ignoreInsertError, newconfig.ignoreInsertError)
+    } catch (e) {
+      assert.fail(e)
+    }
+  })
 })
 describe('Test-Run with MockDB', function () {
   describe('Table Setup', function () {
