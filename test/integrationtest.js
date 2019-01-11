@@ -183,8 +183,14 @@ describe('Test-Run with real Database', function () {
       j2m = undefined
     })
     beforeEach('create Object', function (done) {
-      // TODO: Truncate table
-      done()
+      mysqlConnection.query('TRUNCATE TABLE simple', function (err) {
+        if (err) {
+          console.error(err)
+          process.exit(5)
+        } else {
+          done()
+        }
+      })
     })
     it('should add an object with all fields', function (done) {
       j2m.add({
