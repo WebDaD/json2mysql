@@ -1,57 +1,48 @@
 /* global it, describe, beforeEach, afterEach */
-// have two test-runs:
-// 1. mock db
-// 2. real local db
-
-// test-run
-// 1. create object (missing parms, real parms)
-// 2. setup table (ask for error, real test)
-// 3. add object (error, real)
 
 const JSON2MySQL = require('../index.js')
-const mysql = require('mysql')
 const assert = require('assert')
-let j2m = undefined
+let j2m
 let config = {
-  "table": "simple",
-  "fields": [
+  'table': 'simple',
+  'fields': [
     {
-      "field": "id",
-      "type": "INT"
+      'field': 'id',
+      'type': 'INT'
     },
     {
-      "field": "timestamp",
-      "type": "DATETIME"
+      'field': 'timestamp',
+      'type': 'DATETIME'
     },
     {
-      "field": "title",
-      "type": "VARCHAR"
+      'field': 'title',
+      'type': 'VARCHAR'
     }
   ],
-  "indices": [
-    "timestamp"
+  'indices': [
+    'timestamp'
   ],
-  "primary": [
-    "id"
+  'primary': [
+    'id'
   ],
-  "partioning": {
-    "on": "timestamp",
-    "count": 10
+  'partioning': {
+    'on': 'id',
+    'count': 10
   },
-  "engine": "MyISAM",
-  "ignoreInsertError": true,
-  "mysqlserver": {
-    "host": "localhost",
-    "user": "mqtt",
-    "password": "mqtt",
-    "database": "mqtt"
+  'engine': 'MyISAM',
+  'ignoreInsertError': true,
+  'mysqlserver': {
+    'host': 'localhost',
+    'user': 'mqtt',
+    'password': 'mqtt',
+    'database': 'mqtt'
   }
 }
 let correctsql = {
-  fieldsonly: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL) ENGINE=MyISAM PARTITION BY KEY (timestamp) PARTITIONS 10',
-  fieldsindices: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL, INDEX (`timestamp`) ) ENGINE=MyISAM PARTITION BY KEY (timestamp) PARTITIONS 10',
-  fieldsprimary: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL, PRIMARY KEY (`id`)) ENGINE=MyISAM PARTITION BY KEY (timestamp) PARTITIONS 10',
-  fieldsindicesprimary: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL, INDEX (`timestamp`) , PRIMARY KEY (`id`)) ENGINE=MyISAM PARTITION BY KEY (timestamp) PARTITIONS 10',
+  fieldsonly: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL) ENGINE=MyISAM PARTITION BY KEY (id) PARTITIONS 10',
+  fieldsindices: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL, INDEX (`timestamp`) ) ENGINE=MyISAM PARTITION BY KEY (id) PARTITIONS 10',
+  fieldsprimary: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL, PRIMARY KEY (`id`)) ENGINE=MyISAM PARTITION BY KEY (id) PARTITIONS 10',
+  fieldsindicesprimary: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL, INDEX (`timestamp`) , PRIMARY KEY (`id`)) ENGINE=MyISAM PARTITION BY KEY (id) PARTITIONS 10',
   addAll: 'INSERT IGNORE INTO simple SET `id`="1", `timestamp`="2019-01-30 14:23:12", `title`="Test"',
   addWithMissing: 'INSERT IGNORE INTO simple SET `id`="1", `title`="Test"',
   addWithWrong: 'INSERT IGNORE INTO simple SET `id`="1", `title`="Test"'
@@ -315,27 +306,5 @@ describe('Test-Run with MockDB', function () {
         done()
       })
     })
-  })
-})
-describe('Test-Run with real Database', function () {
-  describe('Table Setup', function () {
-    beforeEach('create Object', function () {
-      config.mysql = mockDB // TODO: replace with open connection
-      j2m = new JSON2MySQL(config)
-    })
-    afterEach('destroy Object', function () {
-      j2m = undefined
-    })
-    // TODO: copy and edit upper tests
-  })
-  describe('Add JSON-Object', function () {
-    beforeEach('create Object', function () {
-      config.mysql = mockDB // TODO: replace with open connection
-      j2m = new JSON2MySQL(config)
-    })
-    afterEach('destroy Object', function () {
-      j2m = undefined
-    })
-    // TODO: copy and edit upper tests,  also have real mysql errors (wrong datetype, eg)
   })
 })

@@ -17,7 +17,7 @@
   "indices": ["timestamp"],
   "primary": ["id"],
   "partioning": {
-    "on": "timestamp",
+    "on": "id",
     "count": 10
   },
   "engine": "MyISAM",

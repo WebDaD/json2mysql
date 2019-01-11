@@ -4,11 +4,16 @@
   "description": "Allows to write a JSON-Object as fields into a mysql-table",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/test.js",
-    "test-coverage": "nyc --reporter=html --reporter=text mocha -- test/test.js",
-    "test-graphics": "nyc --reporter=html --reporter=text mocha -R mochawesome -- test/test.js",
+    "test": "mocha test/unittest.js",
+    "test-coverage": "nyc --reporter=html --reporter=text mocha -- test/unittest.js",
+    "test-graphics": "nyc --reporter=html --reporter=text mocha -R mochawesome -- test/unittest.js",
     "test-mutation": "stryker run",
-    "test-all": "npm run test && npm run test-coverage && npm run test-graphics && npm run test-mutation"
+    "test-all": "npm run test && npm run test-coverage && npm run test-graphics && npm run test-mutation",
+    "test-integration": "mocha test/integrationtest.js",
+    "test-integration-coverage": "nyc --reporter=html --reporter=text mocha -- test/integrationtest.js",
+    "test-integration-graphics": "nyc --reporter=html --reporter=text mocha -R mochawesome -- test/integrationtest.js",
+    "test-integration-all": "npm run test-integration && npm run test-integration-coverage && npm run test-integration-graphics",
+    "test-complete": "npm run test && npm run test-integration"
   },
   "author": "Dominik Sigmund",
   "license": "ISC",
