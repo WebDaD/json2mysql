@@ -12,12 +12,49 @@ const JSON2MySQL = require('../index.js')
 const mysql = require('mysql')
 const assert = require('assert')
 let j2m = undefined
-let config = require('./config.json')
+let config = {
+  "table": "simple",
+  "fields": [
+    {
+      "field": "id",
+      "type": "INT"
+    },
+    {
+      "field": "timestamp",
+      "type": "DATETIME"
+    },
+    {
+      "field": "title",
+      "type": "VARCHAR"
+    }
+  ],
+  "indices": [
+    "timestamp"
+  ],
+  "primary": [
+    "id"
+  ],
+  "partioning": {
+    "on": "timestamp",
+    "count": 10
+  },
+  "engine": "MyISAM",
+  "ignoreInsertError": true,
+  "mysqlserver": {
+    "host": "localhost",
+    "user": "mqtt",
+    "password": "mqtt",
+    "database": "mqtt"
+  }
+}
 let correctsql = {
   fieldsonly: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL) ENGINE=MyISAM PARTITION BY KEY (timestamp) PARTITIONS 10',
   fieldsindices: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL, INDEX (`timestamp`) ) ENGINE=MyISAM PARTITION BY KEY (timestamp) PARTITIONS 10',
   fieldsprimary: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL, PRIMARY KEY (`id`)) ENGINE=MyISAM PARTITION BY KEY (timestamp) PARTITIONS 10',
-  fieldsindicesprimary: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL, INDEX (`timestamp`) , PRIMARY KEY (`id`)) ENGINE=MyISAM PARTITION BY KEY (timestamp) PARTITIONS 10'
+  fieldsindicesprimary: 'CREATE TABLE IF NOT EXISTS simple (`id` INT NOT NULL, `timestamp` DATETIME NOT NULL, `title` VARCHAR(255) NOT NULL, INDEX (`timestamp`) , PRIMARY KEY (`id`)) ENGINE=MyISAM PARTITION BY KEY (timestamp) PARTITIONS 10',
+  addAll: 'INSERT IGNORE INTO simple SET `id`="1", `timestamp`="2019-01-30 14:23:12", `title`="Test"',
+  addWithMissing: 'INSERT IGNORE INTO simple SET `id`="1", `title`="Test"',
+  addWithWrong: 'INSERT IGNORE INTO simple SET `id`="1", `title`="Test"'
 }
 let mockDB = {
   lastQuery: '',
@@ -112,8 +149,8 @@ describe('Test-Run with MockDB', function () {
           assert.fail(error.toString())
         } else {
           assert.equal(mockDB.lastQuery, correctsql.fieldsonly)
-          done()
         }
+        done()
       })
     })
     it('should create a table (fields and indices)', function (done) {
@@ -123,8 +160,8 @@ describe('Test-Run with MockDB', function () {
           assert.fail(error.toString())
         } else {
           assert.equal(mockDB.lastQuery, correctsql.fieldsindices)
-          done()
         }
+        done()
       })
     })
     it('should create a table (fields and primary)', function (done) {
@@ -134,8 +171,8 @@ describe('Test-Run with MockDB', function () {
           assert.fail(error.toString())
         } else {
           assert.equal(mockDB.lastQuery, correctsql.fieldsprimary)
-          done()
         }
+        done()
       })
     })
     it('should create a table (fields and indices and primary)', function (done) {
@@ -144,15 +181,65 @@ describe('Test-Run with MockDB', function () {
           assert.fail(error.toString())
         } else {
           assert.equal(mockDB.lastQuery, correctsql.fieldsindicesprimary)
-          done()
         }
+        done()
       })
     })
-    it('should fail if a incorrect datatype is given')
-    it('should fail if a incorrect engine is given')
-    it('should fail if a given index is not a field')
-    it('should fail if a given primary is not a field')
-    it('should fail if the table already exists')
+    it('should fail if a incorrect datatype is given', function (done) {
+      j2m.options.fields[0].type = 'FOO'
+      j2m.setup(function (error) {
+        if (error) {
+          assert.equal(error.toString().indexOf('Datatype') > -1, true)
+        } else {
+          assert.fail('Here should be an Error...')
+        }
+        done()
+      })
+    })
+    it('should fail if a incorrect engine is given', function (done) {
+      j2m.options.engine = 'FOO'
+      j2m.setup(function (error) {
+        if (error) {
+          assert.equal(error.toString().indexOf('Engine') > -1, true)
+        } else {
+          assert.fail('Here should be an Error...')
+        }
+        done()
+      })
+    })
+    it('should fail if a given index is not a field', function (done) {
+      j2m.options.indices[0] = 'FOO'
+      j2m.setup(function (error) {
+        if (error) {
+          assert.equal(error.toString().indexOf('Index') > -1, true)
+        } else {
+          assert.fail('Here should be an Error...')
+        }
+        done()
+      })
+    })
+    it('should fail if a given primary is not a field', function (done) {
+      j2m.options.primary[0] = 'FOO'
+      j2m.setup(function (error) {
+        if (error) {
+          assert.equal(error.toString().indexOf('Primary') > -1, true)
+        } else {
+          assert.fail('Here should be an Error...')
+        }
+        done()
+      })
+    })
+    it('should fail if a given partitioning Key is not a field', function (done) {
+      j2m.options.partioning.on = 'FOO'
+      j2m.setup(function (error) {
+        if (error) {
+          assert.equal(error.toString().indexOf('Partitioning') > -1, true)
+        } else {
+          assert.fail('Here should be an Error...')
+        }
+        done()
+      })
+    })
   })
   describe('Add JSON-Object', function () {
     beforeEach('create Object', function () {
@@ -162,12 +249,72 @@ describe('Test-Run with MockDB', function () {
     afterEach('destroy Object', function () {
       j2m = undefined
     })
-    it('should add an object with all fields')
-    it('should add an object with missing fields')
-    it('should add an object with wrong fields')
-    it('should fail if an object has no correct fields')
-    it('should fail if an object has not the fields defined as primary')
-    it('should fail if object fields do not match the DB-Field-Types')
+    it('should add an object with all fields', function (done) {
+      j2m.add({
+        id: 1,
+        timestamp: '2019-01-30 14:23:12',
+        title: 'Test'
+      }, function (error) {
+        if (error) {
+          assert.fail(error.toString())
+        } else {
+          assert.equal(mockDB.lastQuery, correctsql.addAll)
+        }
+        done()
+      })
+    })
+    it('should add an object with missing fields', function (done) {
+      j2m.add({
+        id: 1,
+        title: 'Test'
+      }, function (error) {
+        if (error) {
+          assert.fail(error.toString())
+        } else {
+          assert.equal(mockDB.lastQuery, correctsql.addWithMissing)
+        }
+        done()
+      })
+    })
+    it('should add an object with wrong fields (Ignore them)', function (done) {
+      j2m.add({
+        id: 1,
+        foo: 'somevalue',
+        title: 'Test'
+      }, function (error) {
+        if (error) {
+          assert.fail(error.toString())
+        } else {
+          assert.equal(mockDB.lastQuery, correctsql.addWithWrong)
+        }
+        done()
+      })
+    })
+    it('should fail if an object has no correct fields', function (done) {
+      j2m.add({
+        foo: 'somevalue'
+      }, function (error) {
+        if (error) {
+          assert.equal(error.toString().indexOf('Fields') > -1, true)
+        } else {
+          assert.fail('Here should be an Error...')
+        }
+        done()
+      })
+    })
+    it('should fail if an object has not the fields defined as primary', function (done) {
+      j2m.add({
+        timestamp: '2019-01-30 14:23:12',
+        title: 'Test'
+      }, function (error) {
+        if (error) {
+          assert.equal(error.toString().indexOf('Primary') > -1, true)
+        } else {
+          assert.fail('Here should be an Error...')
+        }
+        done()
+      })
+    })
   })
 })
 describe('Test-Run with real Database', function () {
@@ -179,16 +326,7 @@ describe('Test-Run with real Database', function () {
     afterEach('destroy Object', function () {
       j2m = undefined
     })
-    it('should create a table (fields only)')
-    it('should create a table (fields and indices)')
-    it('should create a table (fields and primary)')
-    it('should create a table (fields and indices and primary)')
-    it('should create a partitioned table (fields and indices and primary)')
-    it('should fail if a incorrect datatype is given')
-    it('should fail if a incorrect engine is given')
-    it('should fail if a given index is not a field')
-    it('should fail if a given primary is not a field')
-    it('should fail if the table already exists')
+    // TODO: copy and edit upper tests
   })
   describe('Add JSON-Object', function () {
     beforeEach('create Object', function () {
@@ -198,11 +336,6 @@ describe('Test-Run with real Database', function () {
     afterEach('destroy Object', function () {
       j2m = undefined
     })
-    it('should add an object with all fields')
-    it('should add an object with missing fields')
-    it('should add an object with wrong fields')
-    it('should fail if an object has no correct fields')
-    it('should fail if an object has not the fields defined as primary')
-    it('should fail if object fields do not match the DB-Field-Types')
+    // TODO: copy and edit upper tests,  also have real mysql errors (wrong datetype, eg)
   })
 })

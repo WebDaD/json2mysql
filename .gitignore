@@ -1,2 +1,7 @@
 node_modules/
+.nyc_output/
+coverage/
+mochawesome-report/
+.stryker-tmp/
+reports/
 config.json
