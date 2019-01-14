@@ -49,7 +49,7 @@ describe('Test-Run with real Database', function () {
     } catch (e) {
       console.error(e)
       process.exit(5)
-    }  
+    }
   })
   after('Close Connection', function (done) {
     mysqlConnection.end(function () {
@@ -80,9 +80,15 @@ describe('Test-Run with real Database', function () {
         if (error) {
           assert.fail(error.toString())
         } else {
-          // TODO: check in database
+          mysqlConnection.query('SHOW TABLES like \'simple\'', function (err, results) {
+            if (err) {
+              done(err)
+            } else {
+              assert.equal(results.length, 1)
+              done()
+            }
+          })
         }
-        done()
       })
     })
     it('should create a table (fields and indices)', function (done) {
@@ -91,9 +97,15 @@ describe('Test-Run with real Database', function () {
         if (error) {
           assert.fail(error.toString())
         } else {
-          // TODO: check in database
+          mysqlConnection.query('SHOW TABLES like \'simple\'', function (err, results) {
+            if (err) {
+              done(err)
+            } else {
+              assert.equal(results.length, 1)
+              done()
+            }
+          })
         }
-        done()
       })
     })
     it('should create a table (fields and primary)', function (done) {
@@ -102,9 +114,15 @@ describe('Test-Run with real Database', function () {
         if (error) {
           assert.fail(error.toString())
         } else {
-          // TODO: check in database
+          mysqlConnection.query('SHOW TABLES like \'simple\'', function (err, results) {
+            if (err) {
+              done(err)
+            } else {
+              assert.equal(results.length, 1)
+              done()
+            }
+          })
         }
-        done()
       })
     })
     it('should create a table (fields and indices and primary)', function (done) {
@@ -112,9 +130,15 @@ describe('Test-Run with real Database', function () {
         if (error) {
           assert.fail(error.toString())
         } else {
-          // TODO: check in database
+          mysqlConnection.query('SHOW TABLES like \'simple\'', function (err, results) {
+            if (err) {
+              done(err)
+            } else {
+              assert.equal(results.length, 1)
+              done()
+            }
+          })
         }
-        done()
       })
     })
     it('should fail if a incorrect datatype is given', function (done) {
@@ -201,9 +225,16 @@ describe('Test-Run with real Database', function () {
         if (error) {
           assert.fail(error.toString())
         } else {
-          // TODO: check in database
+          mysqlConnection.query('SELECT id, timestamp, title FROM simple WHERE id=1', function (err, results) {
+            if (err) {
+              done(err)
+            } else {
+              assert.equal(results.length, 1)
+              assert.equal(results[0].title, 'Test')
+              done()
+            }
+          })
         }
-        done()
       })
     })
     it('should add an object with missing fields', function (done) {
@@ -214,9 +245,16 @@ describe('Test-Run with real Database', function () {
         if (error) {
           assert.fail(error.toString())
         } else {
-          // TODO: check in database
+          mysqlConnection.query('SELECT id, timestamp, title FROM simple WHERE id=1', function (err, results) {
+            if (err) {
+              done(err)
+            } else {
+              assert.equal(results.length, 1)
+              assert.equal(results[0].title, 'Test')
+              done()
+            }
+          })
         }
-        done()
       })
     })
     it('should add an object with wrong fields (Ignore them)', function (done) {
@@ -228,9 +266,16 @@ describe('Test-Run with real Database', function () {
         if (error) {
           assert.fail(error.toString())
         } else {
-          // TODO: check in database
+          mysqlConnection.query('SELECT id, timestamp, title FROM simple WHERE id=1', function (err, results) {
+            if (err) {
+              done(err)
+            } else {
+              assert.equal(results.length, 1)
+              assert.equal(results[0].title, 'Test')
+              done()
+            }
+          })
         }
-        done()
       })
     })
     it('should fail if an object has no correct fields', function (done) {
